@@ -3,6 +3,7 @@ package logic
 import (
 	"bluebell/dao/mysql"
 	"bluebell/models"
+	"bluebell/pkg/snowflake"
 	"time"
 )
 
@@ -17,8 +18,8 @@ func SignUp(p *models.ParamSignUp) (err error) {
 	}
 
 	//生成idTODO,雪花算法生成id
-	var userID int64
-	userID = 1
+	userID := snowflake.GenID()
+
 	// 构造一个User实例
 	user := &models.User{
 		UserID:     userID,

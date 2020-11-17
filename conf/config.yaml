@@ -3,7 +3,7 @@ mode: "dev"
 port: 8081
 version: "v0.0.1"
 start_time: "2020-11-12"
-machine_id: 1
+machine_id: 5
 log:
   level: "debug"
   filename: "web_app.log"
