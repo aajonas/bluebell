@@ -16,6 +16,8 @@ func SetupRouter(mode string) *gin.Engine {
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 	//注册
 	r.POST("/signup", controller.SignUpHandler)
+	//登录
+	r.POST("/login", controller.LoginHandler)
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"msg": "404",
