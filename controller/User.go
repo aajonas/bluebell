@@ -5,10 +5,10 @@ import (
 	"bluebell/logic"
 	"bluebell/models"
 	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 func SignUpHandler(c *gin.Context) {
@@ -19,40 +19,25 @@ func SignUpHandler(c *gin.Context) {
 		zap.L().Error("SignUp with invalid param", zap.Error(err))
 		errs, ok := err.(validator.ValidationErrors)
 		if !ok {
-			c.JSON(http.StatusOK, gin.H{
-				"code": -1,
-				"msg":  "参数有误",
-			})
+			ResponseError(c, CodeInvalidParam)
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"code": -1,
-			"msg":  removeTopStruct(errs.Translate(trans)),
-		})
+		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
 	//2、业务处理
 	if err := logic.SignUp(p); err != nil {
 		zap.L().Error("logic.SignUp failed", zap.Error(err))
 		if errors.Is(err, mysql.ErrorUserExist) {
-			c.JSON(http.StatusOK, gin.H{
-				"code": -1,
-				"msg":  "用户已存在",
-			})
+			ResponseError(c, CodeUserExist)
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"code": -1,
-			"msg":  "服务繁忙",
-		})
+		ResponseError(c, CodeServerBusy)
 		return
 	}
 
 	//3、返回响应
-	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"msg":  "success",
-	})
+	ResponseSuccess(c, nil)
 }
 
 //登录
@@ -66,16 +51,10 @@ func LoginHandler(c *gin.Context) {
 		// 判断err是不是validator.ValidationErrors 类型
 		errs, ok := err.(validator.ValidationErrors)
 		if !ok {
-			c.JSON(http.StatusOK, gin.H{
-				"code": -1,
-				"msg":  "参数有误",
-			})
+			ResponseError(c, CodeInvalidParam)
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"code": -1,
-			"msg":  removeTopStruct(errs.Translate(trans)),
-		})
+		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
 	//2、登录逻辑
@@ -83,21 +62,12 @@ func LoginHandler(c *gin.Context) {
 	if err != nil {
 		zap.L().Error("logic.Login failed", zap.String("username", p.Username), zap.Error(err))
 		if errors.Is(err, mysql.ErrorUserExist) {
-			c.JSON(http.StatusOK, gin.H{
-				"code": -1,
-				"msg":  "用户已存在",
-			})
+			ResponseError(c, CodeUserExist)
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"code": -1,
-			"msg":  "用户或密码有误",
-		})
+		ResponseError(c, CodeInvalidPassword)
 		return
 	}
 	//3、返回登录信息
-	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"data": token,
-	})
+	ResponseSuccess(c, token)
 }
