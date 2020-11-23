@@ -5,6 +5,7 @@ import (
 	"bluebell/logic"
 	"bluebell/models"
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -57,8 +58,9 @@ func LoginHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, CodeInvalidParam, removeTopStruct(errs.Translate(trans)))
 		return
 	}
+
 	//2、登录逻辑
-	token, err := logic.Login(p)
+	user, err := logic.Login(p)
 	if err != nil {
 		zap.L().Error("logic.Login failed", zap.String("username", p.Username), zap.Error(err))
 		if errors.Is(err, mysql.ErrorUserExist) {
@@ -69,5 +71,9 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 	//3、返回登录信息
-	ResponseSuccess(c, token)
+	ResponseSuccess(c, gin.H{
+		"user_id":   fmt.Sprintf("%d", user.UserID), // id值大于1<<53-1  int64类型的最大值是1<<63-1
+		"user_name": user.Username,
+		"token":     user.Token,
+	})
 }
