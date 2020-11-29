@@ -3,8 +3,10 @@ package router
 import (
 	"bluebell/controller"
 	"bluebell/logger"
-	"github.com/gin-gonic/gin"
+	"bluebell/middlewares"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter(mode string) *gin.Engine {
@@ -18,6 +20,11 @@ func SetupRouter(mode string) *gin.Engine {
 	r.POST("/signup", controller.SignUpHandler)
 	//登录
 	r.POST("/login", controller.LoginHandler)
+
+	r.GET("/ping", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
+		c.String(http.StatusOK, "pong")
+	})
+
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"msg": "404",
